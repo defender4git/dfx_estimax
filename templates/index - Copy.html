@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profit Estimation Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .account-info {
+            background-color: #e8f4fd;
+            border: 1px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .account-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        .account-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .account-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .account-label {
+            font-weight: bold;
+        }
+        .account-value {
+            color: #333;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .output {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .params-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    {% if account_info %}
+    <div class="container account-info">
+        <div class="account-header">
+            📊 Connected to {{ account_info.broker }} ({{ account_info.server }})
+        </div>
+        <div class="account-details">
+            <div class="account-item">
+                <span class="account-label">Login:</span>
+                <span class="account-value">{{ account_info.login }}</span>
+            </div>
+            <div class="account-item">
+                <span class="account-label">Currency:</span>
+                <span class="account-value">{{ account_info.currency }}</span>
+            </div>
+            <div class="account-item">
+                <span class="account-label">Balance:</span>
+                <span class="account-value">{{ "%.2f"|format(account_info.balance) }}</span>
+            </div>
+            <div class="account-item">
+                <span class="account-label">Equity:</span>
+                <span class="account-value">{{ "%.2f"|format(account_info.equity) }}</span>
+            </div>
+            <div class="account-item">
+                <span class="account-label">Used Margin:</span>
+                <span class="account-value">{{ "%.2f"|format(account_info.margin) }}</span>
+            </div>
+            <div class="account-item">
+                <span class="account-label">Free Margin:</span>
+                <span class="account-value">{{ "%.2f"|format(account_info.margin_free) }}</span>
+            </div>
+            <div class="account-item">
+                <span class="account-label">Leverage:</span>
+                <span class="account-value">{{ account_info.leverage }}:1</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container">
+        <h1>Profit Estimation Analysis Dashboard</h1>
+
+        <form id="analysisForm" method="post" action="/run_analysis">
+            <div class="params-grid">
+                <div class="form-group">
+                    <label for="initial_lot">Initial Lot Size:</label>
+                    <input type="number" id="initial_lot" name="initial_lot" step="0.01" value="0.5" required>
+                </div>
+                <div class="form-group">
+                    <label for="distance">Distance (Points):</label>
+                    <input type="number" id="distance" name="distance" value="430" required>
+                </div>
+                <div class="form-group">
+                    <label for="trades_no">Number of Trades:</label>
+                    <input type="number" id="trades_no" name="trades_no" value="3" required>
+                </div>
+                <div class="form-group">
+                    <label for="capital">Capital Amount:</label>
+                    <input type="number" id="capital" name="capital" value="{% if account_info %}{{ account_info.balance }}{% else %}50000{% endif %}" required>
+                </div>
+                <div class="form-group">
+                    <label for="min_ratio">Min Capital Ratio (0-1):</label>
+                    <input type="number" id="min_ratio" name="min_ratio" step="0.01" min="0" max="1" value="0.2" required>
+                </div>
+                <div class="form-group">
+                    <label for="max_ratio">Max Capital Ratio (0-1):</label>
+                    <input type="number" id="max_ratio" name="max_ratio" step="0.01" min="0" max="1" value="0.5" required>
+                </div>
+            </div>
+            <button type="submit" class="button" id="runButton">Run Profit Analysis</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <p>Running analysis... Please wait.</p>
+        </div>
+
+        {% if output %}
+        <h2>Analysis Results:</h2>
+        <div class="output">{{ output }}</div>
+        {% endif %}
+    </div>
+
+    <script>
+        const form = document.getElementById('analysisForm');
+        const button = document.getElementById('runButton');
+        const loading = document.getElementById('loading');
+
+        form.addEventListener('submit', function() {
+            button.disabled = true;
+            button.textContent = 'Running...';
+            loading.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
