@@ -34,7 +34,8 @@ account_data = {
     "equity": account_info.equity,
     "margin": account_info.margin,
     "margin_free": account_info.margin_free,
-    "leverage": account_info.leverage
+    "leverage": account_info.leverage,
+    #"spread": account_info.spread
 }
 
 # Output account data as JSON for frontend

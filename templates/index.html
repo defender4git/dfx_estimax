@@ -283,7 +283,7 @@
             <div class="params-grid">
                 <div class="form-group">
                     <label for="initial_lot">Initial Lot Size:</label>
-                    <input type="number" id="initial_lot" name="initial_lot" step="0.01" value="0.5" required>
+                    <input type="number" id="initial_lot" name="initial_lot" step="0.01" value="0.01" required>
                 </div>
                 <div class="form-group">
                     <label for="distance">Distance (Points):</label>
@@ -351,6 +351,7 @@
                 <div class="symbol-card">
                     <div class="symbol-header">
                         <h3>{{ result.symbol }}</h3>
+                        <span class="capital-info"> Pips:{{ analysis_data.parameters.distance }} points</span>
                         <span class="capital-info">Capital: {{ result.capital }} {{ result.currency }}</span>
                     </div>
 
